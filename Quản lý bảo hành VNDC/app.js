@@ -57,17 +57,6 @@ const saveAll = () => {
     localStorage.setItem(STORAGE.AUDIT, JSON.stringify(auditLogs));
 };
 
-const exportData = () => {
-    const data = { products, inventory, documents, partners, auditLogs };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'warranty.json';
-    a.click();
-    showToast("Đã tải xuống warranty.json. Hãy chép vào thư mục 'data' và chạy Sync.");
-};
-
 const showToast = (msg) => {
     const t = $('toast'); if(!t) return;
     t.innerText = msg; t.style.display = 'block';

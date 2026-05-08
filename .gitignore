@@ -1,0 +1,14 @@
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.log
+sync_log.txt
+SETUP_ALL_BRAIN.command
+KICH_HOAT_GITHUB.command
+setup_git.sh
+setup_github.sh
+git_test.sh

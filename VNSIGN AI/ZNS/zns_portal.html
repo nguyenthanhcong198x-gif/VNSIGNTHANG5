@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-NC ZNS - Giải pháp Zalo Notification Service</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #0068ff;
+            --primary-gradient: linear-gradient(135deg, #0068ff 0%, #00a3ff 100%);
+            --primary-light: rgba(0, 104, 255, 0.08);
+            --secondary: #1a1a1a;
+            --bg-light: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255, 255, 255, 0.7);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #app-container {
+            display: none; /* Hidden by default until login */
+            width: 100%;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Login Screen */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: radial-gradient(circle at top right, #0068ff, #001a33);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 48px;
+            border-radius: 24px;
+            width: 420px;
+            color: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .login-logo {
+            margin-bottom: 32px;
+        }
+
+        .login-logo .logo-icon {
+            margin: 0 auto 16px;
+            width: 64px;
+            height: 64px;
+            font-size: 2rem;
+        }
+
+        .login-card h2 {
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .login-card p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            font-size: 0.95rem;
+        }
+
+        .login-form .form-group {
+            text-align: left;
+        }
+
+        .login-form label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .login-form input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .login-form input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+        }
+
+        .logo {
+            padding: 0 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--primary);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 104, 255, 0.3);
+        }
+
+        .nav-links {
+            list-style: none;
+            flex: 1;
+            padding: 0 12px;
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.925rem;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-link.active svg {
+            color: var(--primary);
+        }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            scroll-behavior: smooth;
+        }
+
+        header {
+            height: 72px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .header-title h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .lang-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-switcher:hover {
+            border-color: var(--primary);
+            background: var(--bg-light);
+        }
+
+        .lang-flag {
+            width: 20px;
+            height: 14px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .balance-card {
+            background: var(--primary-light);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(0, 104, 255, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-left: 16px;
+            border-left: 1px solid var(--border);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .content-body {
+            padding: 32px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Sections */
+        .tab-section {
+            display: none;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-section.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Dashboard Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card h5 {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-card .val {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-card .trend {
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trend.up { color: var(--success); }
+        .trend.down { color: var(--danger); }
+
+        /* Card Container */
+        .card-container {
+            background-color: var(--white);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .card-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #f8fafc;
+            text-align: left;
+            padding: 14px 24px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #fcfcfc; }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .bg-approved { background-color: #ecfdf5; color: #065f46; }
+        .bg-pending { background-color: #fffbeb; color: #92400e; }
+        .bg-failed { background-color: #fef2f2; color: #991b1b; }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        .btn-primary { 
+            background: var(--primary-gradient); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(0, 104, 255, 0.2);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 104, 255, 0.3);
+        }
+
+        .btn-outline { 
+            background-color: white; 
+            border: 1px solid var(--border); 
+            color: var(--text-main); 
+        }
+        .btn-outline:hover { 
+            background-color: var(--bg-light); 
+            border-color: #cbd5e1;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #334155;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background-color: #fcfcfc;
+        }
+
+        input:focus, select:focus, textarea:focus { 
+            border-color: var(--primary); 
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(0, 104, 255, 0.1);
+        }
+
+        /* Hero Section */
+        .welcome-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 48px;
+            border-radius: 20px;
+            color: white;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .welcome-hero::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 104, 255, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .welcome-hero h1 { 
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 12px; 
+            letter-spacing: -0.025em;
+        }
+        .welcome-hero p { 
+            color: #94a3b8;
+            font-size: 1.1rem;
+            max-width: 600px;
+        }
+
+        /* AI Assistant Float */
+        .ai-assistant-card {
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border: 1px solid var(--primary);
+            border-left: 5px solid var(--primary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .ai-chat-bubble {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 104, 255, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid white;
+        }
+
+        .ai-chat-bubble:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 104, 255, 0.5);
+        }
+
+        .ai-chat-window {
+            position: fixed;
+            bottom: 94px;
+            right: 24px;
+            width: 380px;
+            height: 580px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+            border: 1px solid var(--border);
+            animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ai-icon {
+            background: var(--primary-gradient);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 104, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 104, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 104, 255, 0); }
+        }
+
+        .ai-content h4 {
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: var(--primary);
+        }
+
+        .ai-content p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Chart Placeholder */
+        .chart-container {
+            height: 300px;
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px 10px;
+            background: #fafafa;
+            border-radius: 12px;
+        }
+
+        .chart-bar {
+            width: 40px;
+            background: var(--primary-gradient);
+            border-radius: 6px 6px 0 0;
+            transition: height 1s ease-out;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .chart-bar:hover {
+            filter: brightness(1.1);
+        }
+
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .zalo-preview {
+            width: 320px;
+            background: white;
+            border-radius: 24px;
+            border: 8px solid #1a1a1a;
+            height: 500px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .zalo-header {
+            background: #0068ff;
+            color: white;
+            padding: 12px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .zalo-body {
+            padding: 16px;
+            background: #f0f2f5;
+            height: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .zalo-msg {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            max-width: 90%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .zalo-cta {
+            margin-top: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+            color: #0068ff;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .ai-gen-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .insight-blue { background: #e0f2fe; color: #0369a1; }
+        .insight-green { background: #dcfce7; color: #166534; }
+        .insight-purple { background: #f3e8ff; color: #6b21a8; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="logo-icon">
+                    <i data-lucide="zap"></i>
+                </div>
+                <h2>Z-NC ZNS</h2>
+                <p>Giải pháp thông báo Zalo thông minh</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label>Email hoặc số điện thoại</label>
+                    <input type="text" id="login-user" value="thanhcong@vnsign.ai" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="login-pass" value="••••••••" placeholder="Enter your password">
+                </div>
+                <div style="text-align: right; margin-bottom: 24px;">
+                    <a href="#" style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; text-decoration: none;">Quên mật khẩu?</a>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login" id="login-btn">
+                    Đăng nhập ngay <i data-lucide="arrow-right"></i>
+                </button>
+            </form>
+            <div style="margin-top: 32px; font-size: 0.85rem; color: rgba(255, 255, 255, 0.4);">
+                Chưa có tài khoản? <a href="#" style="color: white; font-weight: 600; text-decoration: none;">Đăng ký miễn phí</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container (Initially hidden) -->
+    <div id="app-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">
+                <i data-lucide="zap"></i>
+            </div>
+            Z-NC ZNS
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" data-tab="dashboard">
+                    <i data-lucide="layout-dashboard"></i> <span data-i18n="dashboard">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-tab="templates">
+                    <i data-lucide="file-text"></i> <span data-i18n="templates">Mẫu tin nhắn (ZNS)</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-tab="campaigns">
+                    <i data-lucide="send"></i> <span data-i18n="campaigns">Chiến dịch</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-tab="contacts">
+                    <i data-lucide="users"></i> <span data-i18n="contacts">Khách hàng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-tab="reports">
+                    <i data-lucide="bar-chart-2"></i> <span data-i18n="reports">Báo cáo</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-tab="billing">
+                    <i data-lucide="credit-card"></i> <span data-i18n="billing">Ví & Nạp tiền</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" data-tab="settings">
+                    <i data-lucide="settings"></i> <span data-i18n="settings">Cài đặt OA</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="#" class="nav-link" id="logout-trigger">
+                <i data-lucide="log-out"></i> <span data-i18n="logout">Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+        <header>
+            <div class="header-title">
+                <h2 id="current-tab-title">Tổng quan hệ thống</h2>
+            </div>
+            <div class="header-actions">
+                <div class="lang-switcher" id="lang-toggle">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Flag_of_Vietnam.svg" class="lang-flag" id="current-flag">
+                    <span id="current-lang-text">Tiếng Việt</span>
+                    <i data-lucide="chevron-down" style="width: 14px;"></i>
+                </div>
+                <div class="balance-card">
+                    <i data-lucide="wallet" style="width: 16px;"></i>
+                    <span data-i18n="wallet_balance">15,250,000 VNĐ</span>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar">TC</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-body">
+            
+            <!-- SECTION: DASHBOARD -->
+            <div id="dashboard" class="tab-section active">
+                <div class="welcome-hero">
+                    <h1 data-i18n="welcome_title">Chào buổi chiều, Thành Công! 👋</h1>
+                    <p data-i18n="welcome_sub">Hệ thống Z-NC ZNS đang vận hành tối ưu. Bạn có 2 thông báo mới về hành vi khách hàng.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h5 data-i18n="stat_sent">Tin gửi tháng này</h5>
+                        <div class="val">124,500</div>
+                        <div class="trend up"><i data-lucide="trending-up" style="width: 14px;"></i> 12% so với tháng trước</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5 data-i18n="stat_delivery">Tỷ lệ nhận tin</h5>
+                        <div class="val">98.2%</div>
+                        <div class="trend up"><i data-lucide="check-circle" style="width: 14px;"></i> Ổn định</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5 data-i18n="stat_cta">Tỷ lệ Click (CTA)</h5>
+                        <div class="val">15.4%</div>
+                        <div class="trend up"><i data-lucide="zap" style="width: 14px;"></i> Cao hơn 3% trung bình</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5 data-i18n="stat_error">Tin lỗi</h5>
+                        <div class="val">12</div>
+                        <div class="trend down"><i data-lucide="trending-down" style="width: 14px;"></i> Giảm 5%</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 32px;">
+                    <div class="card-container" style="margin-bottom: 0;">
+                        <div class="card-header">
+                            <h3><i data-lucide="brain" style="width: 18px; vertical-align: middle; margin-right: 8px; color: var(--primary);"></i> Smart Insights</h3>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div class="insight-card">
+                                <div class="insight-icon insight-blue">
+                                    <i data-lucide="bar-chart-3"></i>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 4px;">Heatmap Alert</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);">Mật độ khách hàng đứng xem màn hình tại quầy A tăng cao lúc 11:30 - 13:00.</p>
+                                </div>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-icon insight-green">
+                                    <i data-lucide="thumbs-up"></i>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 4px;">Social Proof Focus</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);">Khách hàng đang quan tâm nhiều đến hashtag #VNSignSummer trên TikTok.</p>
+                                </div>
+                            </div>
+                            <div class="insight-card" style="margin-bottom: 0;">
+                                <div class="insight-icon insight-purple">
+                                    <i data-lucide="leaf"></i>
+                                </div>
+                                <div>
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 4px;">Green Mode</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);">Tiết kiệm được 45kWh (15%) trong tuần qua nhờ AI Power Saving.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-container" style="margin-bottom: 0;">
+                        <div class="card-header">
+                            <h3>Chiến dịch gần đây</h3>
+                            <button class="btn btn-outline btn-sm">Xem tất cả</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Tên chiến dịch</th>
+                                        <th>Thời gian</th>
+                                        <th>Số lượng</th>
+                                        <th>Thành công</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Gửi Voucher Black Friday</td>
+                                        <td>24/04/2026 10:30</td>
+                                        <td>50,000</td>
+                                        <td>49,850</td>
+                                        <td><span class="badge bg-approved">Hoàn thành</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Thông báo bảo trì hệ thống</td>
+                                        <td>23/04/2026 15:20</td>
+                                        <td>1,200</td>
+                                        <td>1,200</td>
+                                        <td><span class="badge bg-approved">Hoàn thành</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Chúc mừng sinh nhật khách hàng T4</td>
+                                        <td>01/04/2026 08:00</td>
+                                        <td>5,400</td>
+                                        <td>5,380</td>
+                                        <td><span class="badge bg-approved">Hoàn thành</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: TEMPLATES -->
+            <div id="templates" class="tab-section">
+                <div class="card-header" style="margin-bottom: 24px; padding: 0;">
+                    <h2>Quản lý mẫu tin nhắn (ZNS)</h2>
+                    <button class="btn btn-primary" id="open-ai-gen"><i data-lucide="sparkles"></i> AI Viết nội dung</button>
+                </div>
+
+                <!-- AI Writing Assistant -->
+                <div id="ai-writer-container" style="display: none;">
+                    <div class="ai-gen-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 class="sparkle-text">Z-NC ZNS Writing Assistant</h3>
+                            <button class="btn btn-sm btn-outline" id="close-ai-gen">Đóng</button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                            <div>
+                                <div class="form-group">
+                                    <label>Mục tiêu tin nhắn</label>
+                                    <select id="ai-goal">
+                                        <option value="promo">Khuyến mãi / Ưu đãi</option>
+                                        <option value="reminder">Nhắc lịch / Thông báo</option>
+                                        <option value="thanks">Cảm ơn / Chăm sóc</option>
+                                        <option value="otp">Mã xác thực OTP</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tone giọng (Dựa trên Second Brain)</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <span class="badge" style="background: var(--primary-light); color: var(--primary);">Chuyên nghiệp</span>
+                                        <span class="badge" style="background: var(--primary-light); color: var(--primary);">Uy tín</span>
+                                        <span class="badge" style="background: var(--primary-light); color: var(--primary);">Gần gũi</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ghi chú thêm cho AI</label>
+                                    <textarea id="ai-notes" placeholder="Ví dụ: Nội dung dành cho khách hàng VIP, có mã voucher 20%..." rows="3"></textarea>
+                                </div>
+                                <button class="btn btn-primary" style="width: 100%;" id="generate-btn">
+                                    Tạo nội dung mẫu <i data-lucide="wand-2"></i>
+                                </button>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <label style="align-self: flex-start;">Xem trước Zalo</label>
+                                <div class="zalo-preview">
+                                    <div class="zalo-header">
+                                        <div style="width: 24px; height: 24px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i data-lucide="shield-check" style="width: 14px; color: #0068ff;"></i>
+                                        </div>
+                                        <span>VNSIGN Official Account</span>
+                                    </div>
+                                    <div class="zalo-body">
+                                        <div class="zalo-msg" id="preview-text">
+                                            Chào [Tên khách hàng],<br><br>
+                                            Cảm ơn bạn đã tin dùng giải pháp VNSign Digital Signage. Chúng tôi gửi tặng bạn mã ưu đãi gia hạn 20%...
+                                            <div class="zalo-cta">Xem chi tiết</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="stat-card" style="border-left: 4px solid var(--success);">
+                        <h5>Đã phê duyệt</h5>
+                        <div class="val">18</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--warning);">
+                        <h5>Đang chờ duyệt</h5>
+                        <div class="val">2</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--danger);">
+                        <h5>Bị từ chối</h5>
+                        <div class="val">1</div>
+                    </div>
+                </div>
+
+                <div class="card-container" style="margin-top: 32px;">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Template ID</th>
+                                    <th>Tên mẫu tin</th>
+                                    <th>Loại tin nhắn</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>305412</td>
+                                    <td>Xác nhận đơn hàng thành công</td>
+                                    <td>Giao dịch</td>
+                                    <td>20/04/2026</td>
+                                    <td><span class="badge bg-approved">Đang hoạt động</span></td>
+                                    <td><button class="btn btn-outline btn-sm">Thử nghiệm</button></td>
+                                </tr>
+                                <tr>
+                                    <td>305415</td>
+                                    <td>Mã OTP xác thực tài khoản</td>
+                                    <td>OTP/Bảo mật</td>
+                                    <td>18/04/2026</td>
+                                    <td><span class="badge bg-approved">Đang hoạt động</span></td>
+                                    <td><button class="btn btn-outline btn-sm">Thử nghiệm</button></td>
+                                </tr>
+                                <tr>
+                                    <td>302110</td>
+                                    <td>Khuyến mãi mùa hè 2026</td>
+                                    <td>Hậu mãi</td>
+                                    <td>24/04/2026</td>
+                                    <td><span class="badge bg-pending">Đang chờ duyệt</span></td>
+                                    <td>—</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: CAMPAIGNS -->
+            <div id="campaigns" class="tab-section">
+                <div class="ai-assistant-card">
+                    <div class="ai-icon">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <div class="ai-content">
+                        <h4>Gợi ý từ Z-NC ZNS</h4>
+                        <p>Dựa trên hành vi khách hàng tháng trước, việc gửi tin nhắn vào lúc 10:00 sáng Thứ Ba tăng tỷ lệ chuyển đổi thêm 22%. Bạn có muốn tối ưu hóa lịch gửi không?</p>
+                    </div>
+                </div>
+
+                <div class="card-header" style="margin-bottom: 24px; padding: 0;">
+                    <h2>Khởi tạo chiến dịch mới</h2>
+                </div>
+                
+                <div class="card-container" style="padding: 32px;">
+                    <form id="new-campaign-form">
+                        <div class="form-group">
+                            <label>Tên chiến dịch</label>
+                            <input type="text" placeholder="Ví dụ: Chiến dịch tri ân khách hàng VIP T5">
+                        </div>
+                        <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label>Chọn mẫu tin nhắn (Template)</label>
+                                <select>
+                                    <option>-- Chọn mẫu đã được duyệt --</option>
+                                    <option>Xác nhận đơn hàng thành công</option>
+                                    <option>Mã OTP xác thực tài khoản</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Thời gian gửi</label>
+                                <select>
+                                    <option>Gửi ngay lập tức</option>
+                                    <option>Hẹn giờ gửi</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tải lên danh sách khách hàng (.xlsx, .csv)</label>
+                            <div style="border: 2px dashed var(--border); padding: 40px; border-radius: 12px; text-align: center; cursor: pointer; background: #f8fafc;">
+                                <i data-lucide="upload-cloud" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 12px; opacity: 0.6;"></i>
+                                <p style="font-weight: 500;">Kéo thả file vào đây hoặc bấm để chọn tệp</p>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Hỗ trợ .csv, .xls, .xlsx (Tối đa 50MB)</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right; margin-top: 24px;">
+                            <button type="button" class="btn btn-outline" style="margin-right: 12px;">Hủy bỏ</button>
+                            <button type="submit" class="btn btn-primary">Xác nhận gửi chiến dịch <i data-lucide="send"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SECTION: CONTACTS -->
+            <div id="contacts" class="tab-section">
+                <div class="card-header" style="margin-bottom: 24px; padding: 0;">
+                    <h2>Quản lý danh sách khách hàng</h2>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn btn-outline"><i data-lucide="download"></i> Xuất file</button>
+                        <button class="btn btn-primary"><i data-lucide="plus"></i> Thêm khách hàng</button>
+                    </div>
+                </div>
+
+                <div class="card-container">
+                    <div class="card-header">
+                        <div style="position: relative; width: 300px;">
+                            <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted);"></i>
+                            <input type="text" placeholder="Tìm kiếm tên, số điện thoại..." style="padding-left: 40px; padding-top: 8px; padding-bottom: 8px;">
+                        </div>
+                        <select style="width: 200px; padding-top: 8px; padding-bottom: 8px;">
+                            <option>Tất cả nhóm</option>
+                            <option>Khách hàng VIP</option>
+                            <option>Khách hàng mới</option>
+                            <option>Ngừng hoạt động</option>
+                        </select>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Khách hàng</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Nhóm</th>
+                                    <th>Ngày tham gia</th>
+                                    <th>Trạng thái Zalo</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">AN</div>
+                                            <div style="font-weight: 600;">Nguyễn Văn An</div>
+                                        </div>
+                                    </td>
+                                    <td>0901 234 567</td>
+                                    <td><span class="badge" style="background: #e0f2fe; color: #0369a1;">Khách hàng VIP</span></td>
+                                    <td>12/03/2026</td>
+                                    <td><span class="badge bg-approved">Đã quan tâm OA</span></td>
+                                    <td><i data-lucide="more-horizontal" style="cursor: pointer; color: var(--text-muted);"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">LT</div>
+                                            <div style="font-weight: 600;">Lê Thị Thu</div>
+                                        </div>
+                                    </td>
+                                    <td>0988 776 655</td>
+                                    <td><span class="badge" style="background: #f1f5f9; color: #475569;">Khách hàng mới</span></td>
+                                    <td>20/04/2026</td>
+                                    <td><span class="badge bg-pending">Chưa quan tâm</span></td>
+                                    <td><i data-lucide="more-horizontal" style="cursor: pointer; color: var(--text-muted);"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div class="avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">HM</div>
+                                            <div style="font-weight: 600;">Hoàng Minh</div>
+                                        </div>
+                                    </td>
+                                    <td>0912 333 444</td>
+                                    <td><span class="badge" style="background: #e0f2fe; color: #0369a1;">Khách hàng VIP</span></td>
+                                    <td>05/01/2026</td>
+                                    <td><span class="badge bg-approved">Đã quan tâm OA</span></td>
+                                    <td><i data-lucide="more-horizontal" style="cursor: pointer; color: var(--text-muted);"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: REPORTS -->
+            <div id="reports" class="tab-section">
+                <div class="card-header" style="margin-bottom: 24px; padding: 0;">
+                    <h2>Báo cáo hiệu quả gửi tin</h2>
+                    <div style="display: flex; gap: 12px;">
+                        <input type="date" style="width: 160px; padding: 8px;">
+                        <button class="btn btn-primary"><i data-lucide="filter"></i> Lọc dữ liệu</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h5>Tổng tin nhắn</h5>
+                        <div class="val">452,800</div>
+                        <div class="trend up">↑ 8.4% tháng này</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5>Chi phí ước tính</h5>
+                        <div class="val">67,920,000</div>
+                        <div class="trend" style="color: var(--text-muted)">VNĐ</div>
+                    </div>
+                    <div class="stat-card">
+                        <h5>ROI ước tính</h5>
+                        <div class="val">3.8x</div>
+                        <div class="trend up">↑ 0.2% tối ưu</div>
+                    </div>
+                </div>
+
+                <div class="grid-2" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px;">
+                    <div class="card-container" style="margin-bottom: 0;">
+                        <div class="card-header">
+                            <h3>Lưu lượng gửi tin theo ngày</h3>
+                        </div>
+                        <div style="padding: 40px;">
+                            <div class="chart-container">
+                                <div class="chart-bar" style="height: 40%;" data-value="12k"><span class="chart-label">Thứ 2</span></div>
+                                <div class="chart-bar" style="height: 75%;" data-value="28k"><span class="chart-label">Thứ 3</span></div>
+                                <div class="chart-bar" style="height: 60%;" data-value="20k"><span class="chart-label">Thứ 4</span></div>
+                                <div class="chart-bar" style="height: 90%;" data-value="35k"><span class="chart-label">Thứ 5</span></div>
+                                <div class="chart-bar" style="height: 55%;" data-value="18k"><span class="chart-label">Thứ 6</span></div>
+                                <div class="chart-bar" style="height: 30%;" data-value="8k"><span class="chart-label">Thứ 7</span></div>
+                                <div class="chart-bar" style="height: 20%;" data-value="5k"><span class="chart-label">CN</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-container" style="margin-bottom: 0;">
+                        <div class="card-header">
+                            <h3>Trạng thái gửi</h3>
+                        </div>
+                        <div style="padding: 24px;">
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Thành công (98%)</span>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">443,744</span>
+                                </div>
+                                <div style="height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 98%; height: 100%; background: var(--success);"></div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Đang xử lý (1.5%)</span>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">6,792</span>
+                                </div>
+                                <div style="height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: 1.5%; height: 100%; background: var(--warning);"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 0.85rem; font-weight: 600;">Thất bại (0.5%)</span>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">2,264</span>
+                                </div>
+                                <div style="height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: BILLING -->
+            <div id="billing" class="tab-section">
+                <div class="card-header" style="margin-bottom: 24px; padding: 0;">
+                    <h2 data-i18n="billing">Ví & Nạp tiền</h2>
+                </div>
+
+                <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <div class="card-container" style="padding: 32px; background: var(--primary-gradient); color: white;">
+                        <h4 style="opacity: 0.8; margin-bottom: 8px;">Số dư khả dụng</h4>
+                        <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 24px;">15,250,000 VNĐ</div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-outline" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: white;">
+                                <i data-lucide="download"></i> Xuất hóa đơn
+                            </button>
+                            <button class="btn btn-outline" style="background: white; color: var(--primary);">
+                                <i data-lucide="plus-circle"></i> Nạp tiền ngay
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-container" style="padding: 24px;">
+                        <h4 style="margin-bottom: 16px;">Phương thức nạp tiền nhanh</h4>
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div style="width: 100px; height: 100px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="qr-code" style="width: 60px; height: 60px; color: var(--text-muted);"></i>
+                            </div>
+                            <div>
+                                <p style="font-weight: 600; margin-bottom: 4px;">Chuyển khoản qua mã QR</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Tự động cộng tiền vào ví trong 30 giây.</p>
+                                <button class="btn btn-sm btn-primary">Tạo mã QR</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-container" style="margin-top: 32px;">
+                    <div class="card-header">
+                        <h3>Lịch sử giao dịch</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã giao dịch</th>
+                                    <th>Thời gian</th>
+                                    <th>Nội dung</th>
+                                    <th>Số tiền</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#TX99281</td>
+                                    <td>25/04/2026 09:15</td>
+                                    <td>Nạp tiền qua Vietcombank</td>
+                                    <td style="color: var(--success); font-weight: 700;">+5,000,000</td>
+                                    <td><span class="badge bg-approved">Thành công</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#TX99275</td>
+                                    <td>24/04/2026 14:20</td>
+                                    <td>Phí gửi tin chiến dịch Black Friday</td>
+                                    <td style="color: var(--danger); font-weight: 700;">-1,250,000</td>
+                                    <td><span class="badge bg-approved">Thành công</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: OA SETTINGS -->
+            <div id="settings" class="tab-section">
+                <div class="card-header" style="margin-bottom: 24px; padding: 0;">
+                    <h2 data-i18n="settings">Cấu hình Zalo Official Account</h2>
+                </div>
+
+                <div class="ai-assistant-card" style="border-left-color: var(--warning); background: #fffbeb;">
+                    <div class="ai-icon" style="background: var(--warning);">
+                        <i data-lucide="alert-triangle"></i>
+                    </div>
+                    <div class="ai-content">
+                        <h4 style="color: #92400e;">Cảnh báo kết nối</h4>
+                        <p style="color: #92400e;">Access Token của bạn sẽ hết hạn trong <b>48 giờ</b> tới. Vui lòng làm mới Token để tránh gián đoạn dịch vụ.</p>
+                    </div>
+                </div>
+
+                <div class="grid-2" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+                    <div class="card-container" style="padding: 32px;">
+                        <form>
+                            <div class="form-group">
+                                <label>Zalo App ID</label>
+                                <input type="text" value="4528199203348122">
+                            </div>
+                            <div class="form-group">
+                                <label>Zalo App Secret</label>
+                                <input type="password" value="••••••••••••••••">
+                            </div>
+                            <div class="form-group">
+                                <label>OA ID (Official Account ID)</label>
+                                <input type="text" value="229100482271611">
+                            </div>
+                            <div style="margin-top: 32px;">
+                                <button type="button" class="btn btn-primary">Lưu cấu hình</button>
+                                <button type="button" class="btn btn-outline" style="margin-left: 12px;">Làm mới Access Token</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div>
+                        <div class="card-container" style="padding: 24px;">
+                            <h4 style="margin-bottom: 20px;">Trạng thái hệ thống</h4>
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.9rem; color: var(--text-muted);">Kết nối Zalo</span>
+                                    <span class="badge bg-approved">Đang hoạt động</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.9rem; color: var(--text-muted);">Webhook URL</span>
+                                    <span class="badge bg-approved">Bình thường</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.9rem; color: var(--text-muted);">Hạn mức ngày</span>
+                                    <span style="font-weight: 600;">1,000,000 tin</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div> <!-- End App Container -->
+
+    <!-- AI Support Assistant Floating UI -->
+    <div class="ai-chat-bubble" id="chat-bubble">
+        <i data-lucide="sparkles"></i>
+    </div>
+
+    <div class="ai-chat-window" id="chat-window">
+        <div class="chat-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="ai-icon" style="margin-bottom: 0; width: 32px; height: 32px;">
+                    <i data-lucide="bot" style="width: 18px;"></i>
+                </div>
+                <div>
+                    <h4 style="font-size: 0.95rem;">Z-NC AI Assistant</h4>
+                    <p style="font-size: 0.75rem; opacity: 0.8;">Đang trực tuyến</p>
+                </div>
+            </div>
+            <i data-lucide="x" id="close-chat" style="cursor: pointer; opacity: 0.7;"></i>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message ai">
+                Xin chào! Tôi là trợ lý ảo của Z-NC. Tôi có thể giúp gì cho chiến dịch ZNS của bạn hôm nay?
+            </div>
+        </div>
+        <form class="chat-input-area" id="chat-form">
+            <input type="text" class="chat-input" placeholder="Nhập câu hỏi của bạn..." id="user-input">
+            <button type="submit" class="btn btn-primary" style="padding: 10px;">
+                <i data-lucide="send" style="width: 18px;"></i>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Auth Logic
+        const loginForm = document.getElementById('login-form');
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        const loginBtn = document.getElementById('login-btn');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Simulating login process
+            loginBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Đang xác thực...';
+            lucide.createIcons();
+
+            setTimeout(() => {
+                loginScreen.style.opacity = '0';
+                loginScreen.style.transition = 'opacity 0.5s ease';
+                
+                setTimeout(() => {
+                    loginScreen.style.display = 'none';
+                    appContainer.style.display = 'flex';
+                    // Re-initialize icons for the main app
+                    lucide.createIcons();
+                }, 500);
+            }, 1200);
+        });
+
+        // Logout Logic
+        const logoutBtn = document.querySelector('.sidebar-footer .nav-link');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                    location.reload(); // Simple way to reset state
+                }
+            });
+        }
+
+        // Translation Logic
+        const translations = {
+            'vi': {
+                'dashboard': 'Dashboard',
+                'templates': 'Mẫu tin nhắn (ZNS)',
+                'campaigns': 'Chiến dịch',
+                'contacts': 'Khách hàng',
+                'reports': 'Báo cáo',
+                'billing': 'Ví & Nạp tiền',
+                'settings': 'Cài đặt OA',
+                'logout': 'Đăng xuất',
+                'welcome_title': 'Chào buổi chiều, Thành Công! 👋',
+                'welcome_sub': 'Hệ thống Z-NC ZNS đang vận hành tối ưu. Bạn có 2 thông báo mới về hành vi khách hàng.',
+                'wallet_balance': '15,250,000 VNĐ',
+                'stat_sent': 'Tin gửi tháng này',
+                'stat_delivery': 'Tỷ lệ nhận tin',
+                'stat_cta': 'Tỷ lệ Click (CTA)',
+                'stat_error': 'Tin lỗi'
+            },
+            'en': {
+                'dashboard': 'Dashboard',
+                'templates': 'Message Templates',
+                'campaigns': 'Campaigns',
+                'contacts': 'Contacts',
+                'reports': 'Reports',
+                'billing': 'Billing & Wallet',
+                'settings': 'OA Settings',
+                'logout': 'Logout',
+                'welcome_title': 'Good afternoon, Thành Công! 👋',
+                'welcome_sub': 'Z-NC ZNS system is running optimally. You have 2 new insights.',
+                'wallet_balance': '$600.00',
+                'stat_sent': 'Messages this month',
+                'stat_delivery': 'Delivery Rate',
+                'stat_cta': 'Click-through Rate',
+                'stat_error': 'Error Rate'
+            }
+        };
+
+        let currentLang = 'vi';
+        const langToggle = document.getElementById('lang-toggle');
+        const currentFlag = document.getElementById('current-flag');
+        const currentLangText = document.getElementById('current-lang-text');
+
+        function updateLanguage(lang) {
+            currentLang = lang;
+            const dict = translations[lang];
+            
+            // Update UI elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.innerText = dict[key];
+                }
+            });
+
+            // Update specific static elements
+            if (lang === 'en') {
+                currentFlag.src = 'https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg';
+                currentLangText.innerText = 'English';
+            } else {
+                currentFlag.src = 'https://upload.wikimedia.org/wikipedia/commons/2/21/Flag_of_Vietnam.svg';
+                currentLangText.innerText = 'Tiếng Việt';
+            }
+        }
+
+        langToggle.addEventListener('click', () => {
+            updateLanguage(currentLang === 'vi' ? 'en' : 'vi');
+        });
+
+        // Initialize Icons for login screen
+        lucide.createIcons();
+
+        // Tab Switching Logic
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.tab-section');
+        const titleEl = document.getElementById('current-tab-title');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tabId = link.getAttribute('data-tab');
+                if (!tabId) return;
+
+                // Update Sidebar
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                // Update Content
+                sections.forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(tabId);
+                if (target) target.classList.add('active');
+
+                // Update Title
+                const titles = {
+                    'dashboard': 'Tổng quan hệ thống',
+                    'templates': 'Quản lý mẫu tin nhắn (ZNS)',
+                    'campaigns': 'Chiến dịch gửi tin',
+                    'contacts': 'Quản lý khách hàng',
+                    'reports': 'Báo cáo chi tiết',
+                    'billing': 'Quản lý Ví & Nạp tiền',
+                    'settings': 'Cấu hình Zalo Official Account'
+                };
+                if (titles[tabId]) titleEl.innerText = titles[tabId];
+            });
+        });
+
+        // AI Assistant Logic
+        const openAiBtn = document.getElementById('open-ai-gen');
+        const closeAiBtn = document.getElementById('close-ai-gen');
+        const aiContainer = document.getElementById('ai-writer-container');
+        const generateBtn = document.getElementById('generate-btn');
+        const previewText = document.getElementById('preview-text');
+        const aiGoal = document.getElementById('ai-goal');
+        const aiNotes = document.getElementById('ai-notes');
+
+        if (openAiBtn) {
+            openAiBtn.addEventListener('click', () => {
+                aiContainer.style.display = 'block';
+                aiContainer.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        if (closeAiBtn) {
+            closeAiBtn.addEventListener('click', () => {
+                aiContainer.style.display = 'none';
+            });
+        }
+
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                const goal = aiGoal.value;
+                const notes = aiNotes.value;
+                
+                generateBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Đang suy nghĩ...';
+                lucide.createIcons();
+
+                // Simulating AI generation
+                setTimeout(() => {
+                    let content = '';
+                    if (goal === 'promo') {
+                        content = `Chào [Tên khách hàng],<br><br>VNSign dành tặng riêng bạn mã ưu đãi <b>DIGITAL2026</b> giảm ngay 20% khi nâng cấp gói Cloud CMS.<br><br>Ưu đãi có hạn đến hết 30/04. Đừng bỏ lỡ nhé!<br><br><div class="zalo-cta">Sử dụng ngay</div>`;
+                    } else if (goal === 'reminder') {
+                        content = `Thông báo bảo trì:<br><br>Hệ thống VNSign sẽ tiến hành bảo trì định kỳ vào 01:00 AM ngày mai. Các màn hình sẽ hoạt động ở chế độ Offline.<br><br>Xin lỗi vì sự bất tiện này.<br><br><div class="zalo-cta">Xem chi tiết</div>`;
+                    } else if (goal === 'thanks') {
+                        content = `Cảm ơn bạn!<br><br>Đơn hàng #VNS${Math.floor(Math.random()*10000)} của bạn đã được xác nhận thành công. Chúng tôi sẽ sớm liên hệ để triển khai lắp đặt.<br><br>Chúc bạn một ngày tốt lành!<br><br><div class="zalo-cta">Theo dõi đơn hàng</div>`;
+                    } else {
+                        content = `Mã xác thực (OTP) của bạn là: <b>${Math.floor(100000 + Math.random() * 900000)}</b><br><br>Vui lòng không cung cấp mã này cho bất kỳ ai. Mã có hiệu lực trong 2 phút.`;
+                    }
+
+                    previewText.innerHTML = content;
+                    generateBtn.innerHTML = 'Tạo nội dung mẫu <i data-lucide="wand-2"></i>';
+                    lucide.createIcons();
+                }, 1500);
+            });
+        }
+
+        // Form Submit Simulation
+        const campaignForm = document.getElementById('new-campaign-form');
+        if (campaignForm) {
+            campaignForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('🚀 Chiến dịch đã được gửi vào hàng đợi xử lý! Chúng tôi sẽ thông báo khi hoàn tất.');
+            });
+        }
+
+        // Add some animation to chart bars on load
+        window.addEventListener('load', () => {
+            const bars = document.querySelectorAll('.chart-bar');
+            bars.forEach(bar => {
+                const finalHeight = bar.style.height;
+                bar.style.height = '0';
+                setTimeout(() => {
+                    bar.style.height = finalHeight;
+                }, 400);
+            });
+        });
+
+        // Floating Chat Assistant Logic
+        const chatBubble = document.getElementById('chat-bubble');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChat = document.getElementById('close-chat');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        chatBubble.addEventListener('click', () => {
+            chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        closeChat.addEventListener('click', () => {
+            chatWindow.style.display = 'none';
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // User Message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user';
+            userDiv.innerText = text;
+            chatMessages.appendChild(userDiv);
+            userInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // AI Reply Simulation
+            setTimeout(() => {
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'message ai';
+                
+                let reply = '';
+                const lowText = text.toLowerCase();
+                if (lowText.includes('zns') || lowText.includes('tin nhắn')) {
+                    reply = 'ZNS (Zalo Notification Service) giúp bạn gửi thông báo đến khách hàng một cách chính thống. Bạn nên sử dụng các mẫu tin đã được duyệt để đạt hiệu quả cao nhất.';
+                } else if (lowText.includes('giá') || lowText.includes('chi phí')) {
+                    reply = 'Chi phí gửi tin ZNS của Z-NC rất cạnh tranh, chỉ từ 150đ - 300đ tùy loại tin. Bạn có thể kiểm tra ví tiền ở thanh menu trên cùng.';
+                } else if (lowText.includes('khách hàng')) {
+                    reply = 'Bạn có thể quản lý danh sách khách hàng trong mục "Khách hàng". Hệ thống Z-NC hỗ trợ lọc khách hàng VIP để gửi tin nhắn cá nhân hóa.';
+                } else {
+                    reply = 'Vấn đề này tôi đang tìm hiểu thêm. Bạn có muốn tôi kết nối với nhân viên hỗ trợ kỹ thuật không?';
+                }
+
+                aiDiv.innerText = reply;
+                chatMessages.appendChild(aiDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

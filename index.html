@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNDC Enterprise Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .background-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            filter: blur(150px);
+            opacity: 0.2;
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob-2 {
+            background: var(--secondary);
+            right: -100px;
+            bottom: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from { transform: translate(0, 0); }
+            to { transform: translate(100px, 100px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 90%;
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        header {
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: var(--light);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            background: rgba(99, 102, 241, 0.1);
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .btn-link {
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-link span {
+            transition: transform 0.3s;
+        }
+
+        .card:hover .btn-link span {
+            transform: translateX(5px);
+        }
+
+        footer {
+            margin-top: 80px;
+            color: #475569;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="status">
+                <span class="dot"></span> SYSTEMS ONLINE
+            </div>
+            <h1>VNDC Portal</h1>
+            <p class="subtitle">Hệ thống quản trị doanh nghiệp tích hợp. Truy cập nhanh các ứng dụng nghiệp vụ của VNDC.</p>
+        </header>
+
+        <div class="grid">
+            <a href="Kế toán tiền lương/index.html" class="card">
+                <div class="icon">💰</div>
+                <h3>Kế toán Tiền lương</h3>
+                <p>Hệ thống quản lý nhân sự, tính lương, hợp đồng và thuế TNCN chuyên nghiệp.</p>
+                <div class="btn-link">Truy cập ứng dụng <span>→</span></div>
+            </a>
+
+            <a href="Quản lý bảo hành VNDC/index.html" class="card">
+                <div class="icon">🛡️</div>
+                <h3>Quản lý Bảo hành</h3>
+                <p>Theo dõi thiết bị, kích hoạt bảo hành và quản lý tồn kho kỹ thuật số.</p>
+                <div class="btn-link">Truy cập ứng dụng <span>→</span></div>
+            </a>
+
+            <a href="landing-page/index.html" class="card">
+                <div class="icon">🚀</div>
+                <h3>VNSIGN Landing Page</h3>
+                <p>Trang giới thiệu sản phẩm và chiến dịch marketing của VNSIGN.</p>
+                <div class="btn-link">Xem trang web <span>→</span></div>
+            </a>
+        </div>
+
+        <footer>
+            &copy; 2026 VNDC Enterprise Solutions. All rights reserved.
+        </footer>
+    </div>
+</body>
+</html>

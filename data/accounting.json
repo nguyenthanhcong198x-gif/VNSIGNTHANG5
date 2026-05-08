@@ -5,11 +5,55 @@
       "code": "NV001",
       "name": "Nguyễn Thành Công",
       "dept": "Quản lý",
-      "baseSalary": 25000000,
-      "insSalary": 5000000,
+      "baseSalary": 45000000,
+      "insSalary": 10000000,
       "lunch": 730000,
       "phone": 500000,
+      "dependents": 2
+    },
+    {
+      "id": 2,
+      "code": "NV002",
+      "name": "Trần Thị Mai",
+      "dept": "Kế toán",
+      "baseSalary": 18000000,
+      "insSalary": 5000000,
+      "lunch": 730000,
+      "phone": 300000,
+      "dependents": 0
+    },
+    {
+      "id": 3,
+      "code": "NV003",
+      "name": "Lê Văn Nam",
+      "dept": "Kinh doanh",
+      "baseSalary": 12000000,
+      "insSalary": 5000000,
+      "lunch": 730000,
+      "phone": 300000,
       "dependents": 1
+    },
+    {
+      "id": 4,
+      "code": "NV004",
+      "name": "Phạm Minh Đức",
+      "dept": "Kỹ thuật",
+      "baseSalary": 15000000,
+      "insSalary": 5000000,
+      "lunch": 730000,
+      "phone": 300000,
+      "dependents": 1
+    },
+    {
+      "id": 5,
+      "code": "NV005",
+      "name": "Hoàng Anh Tuấn",
+      "dept": "Kỹ thuật",
+      "baseSalary": 14000000,
+      "insSalary": 5000000,
+      "lunch": 730000,
+      "phone": 300000,
+      "dependents": 0
     }
   ],
   "expenses": [],

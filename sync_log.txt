@@ -23,3 +23,21 @@ fatal: unable to access 'https://github.com/nguyenthanhcong198x-gif/VNSIGNTHANG5
 Sync failed! Check your connection or credentials.
 --------------------------------
 --- Sync All Brain started at Fri May  8 14:32:34 +07 2026 ---
+[main aacd0f6] Auto update all brain: Fri May  8 14:32:34 +07 2026
+ Committer: Thanh Cong <thanhcong@MacBook-Air-cua-Thanh.local>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 1 insertion(+)
+fatal: unable to access 'https://github.com/nguyenthanhcong198x-gif/VNSIGNTHANG5/': Could not resolve host: github.com
+Sync failed! Check your connection or credentials.
+--------------------------------

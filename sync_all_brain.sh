@@ -2,29 +2,37 @@
 
 # Configuration
 PROJECT_DIR="/Users/thanhcong/Desktop/My brain"
+DOWNLOADS_DIR="/Users/thanhcong/Downloads"
 LOG_FILE="$PROJECT_DIR/sync_log.txt"
 
 cd "$PROJECT_DIR" || exit
 
-echo "--- Sync All Brain started at $(date) ---" >> "$LOG_FILE"
+echo "--- Smart Sync started at $(date) ---" >> "$LOG_FILE"
 
-# Add all changes
+# 1. Tự động kiểm tra và di chuyển dữ liệu từ Downloads (Nếu có)
+if [ -f "$DOWNLOADS_DIR/data.json" ]; then
+    echo "Phát hiện dữ liệu mới trong Downloads. Đang tự động cập nhật..." >> "$LOG_FILE"
+    
+    # Kiểm tra nội dung file để biết thuộc về hệ thống nào
+    if grep -q "employees" "$DOWNLOADS_DIR/data.json"; then
+        mv "$DOWNLOADS_DIR/data.json" "$PROJECT_DIR/Kế toán tiền lương/data.json"
+        echo "Đã cập nhật dữ liệu Kế toán." >> "$LOG_FILE"
+    elif grep -q "inventory" "$DOWNLOADS_DIR/data.json"; then
+        mv "$DOWNLOADS_DIR/data.json" "$PROJECT_DIR/Quản lý bảo hành VNDC/data.json"
+        echo "Đã cập nhật dữ liệu Bảo hành." >> "$LOG_FILE"
+    fi
+fi
+
+# 2. Add all changes
 git add . >> "$LOG_FILE" 2>&1
 
-# Commit if there are changes
+# 3. Commit if there are changes
 if ! git diff-index --quiet HEAD --; then
-    git commit -m "Auto update all brain: $(date)" >> "$LOG_FILE" 2>&1
-    
-    # Push to GitHub
+    git commit -m "Smart Auto Sync: $(date)" >> "$LOG_FILE" 2>&1
     git push origin main >> "$LOG_FILE" 2>&1
-    
-    if [ $? -eq 0 ]; then
-        echo "Sync successful!" >> "$LOG_FILE"
-    else
-        echo "Sync failed! Check your connection or credentials." >> "$LOG_FILE"
-    fi
+    echo "Sync successful!" >> "$LOG_FILE"
 else
-    echo "No changes to commit." >> "$LOG_FILE"
+    echo "No changes detected." >> "$LOG_FILE"
 fi
 
 echo "--------------------------------" >> "$LOG_FILE"

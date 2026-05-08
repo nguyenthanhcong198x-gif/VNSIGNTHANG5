@@ -34,6 +34,17 @@ const saveToLocal = () => {
     localStorage.setItem(STORAGE.AUDIT, JSON.stringify(auditLogs));
 };
 
+const exportData = () => {
+    const data = { employees, expenses, leaves };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.json';
+    a.click();
+    showToast("Đã tải xuống tệp data.json. Hãy chép vào thư mục và chạy Sync.");
+};
+
 const showToast = (m) => { const t = $('toast'); if(!t) return; t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); };
 const logAudit = (action) => { auditLogs.push({ time: new Date().toLocaleString(), user: currentUser ? currentUser.name : 'System', action }); saveToLocal(); };
 

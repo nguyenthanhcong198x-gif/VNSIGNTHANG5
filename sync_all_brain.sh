@@ -9,26 +9,23 @@ cd "$PROJECT_DIR" || exit
 
 echo "--- Smart Sync started at $(date) ---" >> "$LOG_FILE"
 
-# 1. Tự động kiểm tra và di chuyển dữ liệu từ Downloads (Nếu có)
-if [ -f "$DOWNLOADS_DIR/data.json" ]; then
-    echo "Phát hiện dữ liệu mới trong Downloads. Đang tự động cập nhật..." >> "$LOG_FILE"
-    
-    # Kiểm tra nội dung file để biết thuộc về hệ thống nào
-    if grep -q "employees" "$DOWNLOADS_DIR/data.json"; then
-        mv "$DOWNLOADS_DIR/data.json" "$PROJECT_DIR/Kế toán tiền lương/data.json"
-        echo "Đã cập nhật dữ liệu Kế toán." >> "$LOG_FILE"
-    elif grep -q "inventory" "$DOWNLOADS_DIR/data.json"; then
-        mv "$DOWNLOADS_DIR/data.json" "$PROJECT_DIR/Quản lý bảo hành VNDC/data.json"
-        echo "Đã cập nhật dữ liệu Bảo hành." >> "$LOG_FILE"
-    fi
+# 1. Tự động kiểm tra và di chuyển dữ liệu từ Downloads vào thư mục 'data' trung tâm
+if [ -f "$DOWNLOADS_DIR/accounting.json" ]; then
+    echo "Phát hiện dữ liệu Kế toán mới. Đang đồng bộ..." >> "$LOG_FILE"
+    mv "$DOWNLOADS_DIR/accounting.json" "$PROJECT_DIR/data/accounting.json"
 fi
 
-# 2. Add all changes
+if [ -f "$DOWNLOADS_DIR/warranty.json" ]; then
+    echo "Phát hiện dữ liệu Bảo hành mới. Đang đồng bộ..." >> "$LOG_FILE"
+    mv "$DOWNLOADS_DIR/warranty.json" "$PROJECT_DIR/data/warranty.json"
+fi
+
+# 2. Add all changes (bao gồm cả thư mục data mới)
 git add . >> "$LOG_FILE" 2>&1
 
-# 3. Commit if there are changes
+# 3. Commit and Push
 if ! git diff-index --quiet HEAD --; then
-    git commit -m "Smart Auto Sync: $(date)" >> "$LOG_FILE" 2>&1
+    git commit -m "Central Data Sync: $(date)" >> "$LOG_FILE" 2>&1
     git push origin main >> "$LOG_FILE" 2>&1
     echo "Sync successful!" >> "$LOG_FILE"
 else

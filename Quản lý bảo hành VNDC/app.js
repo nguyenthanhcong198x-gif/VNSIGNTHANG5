@@ -32,7 +32,7 @@ let auditLogs = JSON.parse(localStorage.getItem(STORAGE.AUDIT)) || [];
 
 // NEW: Auto-sync from server if local is empty
 if (inventory.length <= 2) { // Allow for defaults
-    fetch('data.json')
+    fetch('../data/warranty.json')
         .then(response => response.json())
         .then(data => {
             if (data.inventory && data.inventory.length > 0) {
@@ -63,9 +63,9 @@ const exportData = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'data.json';
+    a.download = 'warranty.json';
     a.click();
-    showToast("Đã tải xuống tệp data.json. Hãy chép vào thư mục và chạy Sync.");
+    showToast("Đã tải xuống warranty.json. Hãy chép vào thư mục 'data' và chạy Sync.");
 };
 
 const showToast = (msg) => {

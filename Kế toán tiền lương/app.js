@@ -11,7 +11,7 @@ let currentUser = JSON.parse(sessionStorage.getItem('vndc_payroll_user')) || nul
 
 // NEW: Auto-load from server if local is empty
 if (employees.length === 0) {
-    fetch('data.json')
+    fetch('../data/accounting.json')
         .then(response => response.json())
         .then(data => {
             if (data.employees) {
@@ -40,9 +40,9 @@ const exportData = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'data.json';
+    a.download = 'accounting.json';
     a.click();
-    showToast("Đã tải xuống tệp data.json. Hãy chép vào thư mục và chạy Sync.");
+    showToast("Đã tải xuống accounting.json. Hãy chép vào thư mục 'data' và chạy Sync.");
 };
 
 const showToast = (m) => { const t = $('toast'); if(!t) return; t.innerText = m; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); };

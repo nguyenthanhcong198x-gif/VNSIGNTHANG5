@@ -1,0 +1,12 @@
+{
+  "products": [
+    { "id": 1, "sku": "VNS-LED-P2.5", "name": "Màn hình LED P2.5 Indoor", "unit": "Bộ", "brand": "VNSign" },
+    { "id": 2, "sku": "VNS-BOX-V4", "name": "Android Box VNSign V4", "unit": "Cái", "brand": "VNSign" }
+  ],
+  "inventory": [
+    { "id": 1, "productId": 1, "serial": "SN2024001", "status": "available", "location": "WH1-A1", "lot": "L01" },
+    { "id": 2, "productId": 2, "serial": "BOX999", "status": "available", "location": "WH1-A2", "lot": "L02" }
+  ],
+  "documents": [],
+  "partners": []
+}

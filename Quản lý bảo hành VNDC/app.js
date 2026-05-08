@@ -29,6 +29,22 @@ let partners = JSON.parse(localStorage.getItem(STORAGE.PARTNERS)) || [
 ];
 
 let auditLogs = JSON.parse(localStorage.getItem(STORAGE.AUDIT)) || [];
+
+// NEW: Auto-sync from server if local is empty
+if (inventory.length <= 2) { // Allow for defaults
+    fetch('data.json')
+        .then(response => response.json())
+        .then(data => {
+            if (data.inventory && data.inventory.length > 0) {
+                products = data.products || products;
+                inventory = data.inventory;
+                documents = data.documents || [];
+                partners = data.partners || [];
+                saveAll();
+                renderDashboard();
+            }
+        }).catch(err => console.log("No data.json found"));
+}
 let currentUser = JSON.parse(sessionStorage.getItem('wms_user')) || null;
 
 const $ = (id) => document.getElementById(id);

@@ -9,6 +9,21 @@ let leaves = JSON.parse(localStorage.getItem(STORAGE.LEAVE)) || [];
 let auditLogs = JSON.parse(localStorage.getItem(STORAGE.AUDIT)) || [];
 let currentUser = JSON.parse(sessionStorage.getItem('vndc_payroll_user')) || null;
 
+// NEW: Auto-load from server if local is empty
+if (employees.length === 0) {
+    fetch('data.json')
+        .then(response => response.json())
+        .then(data => {
+            if (data.employees) {
+                employees = data.employees;
+                expenses = data.expenses || [];
+                leaves = data.leaves || [];
+                saveToLocal();
+                renderActiveView();
+            }
+        }).catch(err => console.log("No initial data file found."));
+}
+
 const $ = (id) => document.getElementById(id);
 const formatMoney = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v || 0);
 

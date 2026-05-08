@@ -110,6 +110,16 @@
                 </div>
 
                 <div id="view-payroll" class="view">
+                    <div class="filter-card">
+                        <div class="filter-group">
+                            <label class="filter-label">Tìm nhân viên</label>
+                            <div class="filter-input-wrap"><input type="text" id="payrollSearch" oninput="renderPayroll(document.getElementById('salaryMonth').value)" placeholder="Tên hoặc mã NV"></div>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Bộ phận</label>
+                            <div class="filter-input-wrap"><select id="payrollDept" onchange="renderPayroll(document.getElementById('salaryMonth').value)"><option value="">Tất cả bộ phận</option></select></div>
+                        </div>
+                    </div>
                     <div class="data-card"><table class="table"><thead><tr><th>Nhân viên</th><th>Lương CB</th><th>Thưởng</th><th>Ứng</th><th>BHXH</th><th>Thuế</th><th>Thực lĩnh</th></tr></thead><tbody id="payrollBody"></tbody></table></div>
                 </div>
 

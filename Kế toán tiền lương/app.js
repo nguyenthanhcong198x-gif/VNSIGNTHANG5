@@ -149,10 +149,27 @@ const renderEmployees = () => {
 };
 
 const renderPayroll = (m) => {
-    $('payrollBody').innerHTML = employees.map(e => {
+    const q = ($('payrollSearch')?.value || '').toLowerCase().trim();
+    const dept = $('payrollDept')?.value || '';
+    const filtered = employees.filter(e => {
+        const matchQ = !q || e.name.toLowerCase().includes(q) || e.code.toLowerCase().includes(q);
+        const matchDept = !dept || e.dept === dept;
+        return matchQ && matchDept;
+    });
+
+    $('payrollBody').innerHTML = filtered.map(e => {
         const p = getPayrollData(e, m);
         return `<tr><td><b>${e.name}</b></td><td>${formatMoney(e.baseSalary)}</td><td><span style="color:green">+${formatMoney(p.bonus)}</span></td><td><span style="color:orange">${formatMoney(p.advance)}</span></td><td>-${formatMoney(p.ins)}</td><td>-${formatMoney(p.pit)}</td><td><b style="color:var(--primary)">${formatMoney(p.net)}</b></td></tr>`;
     }).join('');
+};
+
+const populatePayrollDeptFilter = () => {
+    const select = $('payrollDept');
+    if (!select) return;
+    const current = select.value;
+    const depts = [...new Set(employees.map(e => e.dept).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi'));
+    select.innerHTML = `<option value="">Tất cả bộ phận</option>${depts.map(d => `<option value="${d}">${d}</option>`).join('')}`;
+    if (depts.includes(current)) select.value = current;
 };
 
 const updateRptPeriodOptions = () => {
@@ -215,7 +232,7 @@ const saveEmployee = () => {
     const d = { code:$('eCode').value, name:$('eName').value, dept:$('eDept').value, baseSalary:parseFloat($('eBaseSalary').value)||0, insSalary:parseFloat($('eInsSalary').value)||0, lunch:parseFloat($('eLunch').value)||0, phone:parseFloat($('ePhone').value)||0, dependents:parseInt($('eDependents').value)||0 };
     if (id) { const idx = employees.findIndex(x => x.id == id); employees[idx] = { ...employees[idx], ...d }; logAudit(`Sửa NV: ${d.name}`); }
     else { d.id = Date.now(); employees.push(d); logAudit(`Mới NV: ${d.name}`); }
-    saveToLocal(); closeModal('employeeModal'); renderActiveView(); showToast("Đã lưu hồ sơ thành công!");
+    saveToLocal(); closeModal('employeeModal'); populatePayrollDeptFilter(); renderActiveView(); showToast("Đã lưu hồ sơ thành công!");
 };
 
 const openContractModal = (id) => {
@@ -261,6 +278,6 @@ window.onload = () => {
         $('appScreen').style.display = 'flex'; $('loginScreen').style.display = 'none';
         $('sidebarUser').innerText = currentUser.name;
         $('rptEmpId').innerHTML = employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-        updateRptPeriodOptions(); renderActiveView();
+        updateRptPeriodOptions(); populatePayrollDeptFilter(); renderActiveView();
     }
 };
